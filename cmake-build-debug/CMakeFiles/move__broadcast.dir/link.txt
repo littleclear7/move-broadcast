@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/move__broadcast.dir/move-broadcast.c.o  -o move__broadcast  -lm 
+/usr/bin/cc -g   CMakeFiles/move__broadcast.dir/move-broadcast.c.o  -o move__broadcast  -lm -lpthread 

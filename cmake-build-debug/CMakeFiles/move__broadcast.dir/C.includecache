@@ -11,12 +11,16 @@ stdlib.h
 -
 stdio.h
 -
+zconf.h
+-
 move-broadcast.h
 /root/CLionProjects/move- broadcast/move-broadcast.h
 time.h
 /root/CLionProjects/move- broadcast/time.h
 math.h
 /root/CLionProjects/move- broadcast/math.h
+pthread.h
+/root/CLionProjects/move- broadcast/pthread.h
 
 /root/CLionProjects/move- broadcast/move-broadcast.h
 

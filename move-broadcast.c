@@ -3,15 +3,18 @@
 //
 #include <stdlib.h>
 #include <stdio.h>
+#include <zconf.h>
 #include "move-broadcast.h"
 #include "time.h"
 #include "math.h"
+#include "pthread.h"
 UeBroadcastInfo *ueBroadcastInfo;
 Point ueNowPoint;
 int isInitRandom = 0; //初始化随机数种子标识
 
 UeBroadcastInfo* initUeBroadcastInfo(){
-    UeBroadcastInfo *ueBroadcastInfo1 = (UeBroadcastInfo *)calloc(0,sizeof(UeBroadcastInfo));
+    UeBroadcastInfo *ueBroadcastInfo1 = (UeBroadcastInfo *)calloc(sizeof(UeBroadcastInfo),1);
+    int t = sizeof(UeBroadcastInfo);
     ueBroadcastInfo1->cursor = 0;
     return ueBroadcastInfo1;
 }
@@ -22,6 +25,7 @@ void init_move_system(int moveSeed){
         srand(time(0) + moveSeed);
         isInitRandom = 1;
     }
+    return;
 }
 
 /*************************************************
@@ -119,7 +123,7 @@ int get_points_distance(Point point1, Point point2){
 
 void switchNewGnb(GnbPointInfo newGnbPoiont){
     //fixme:去掉printf会导致如果在后续继续使用printf会产生malloc(): corrupted top size错误
-    printf("切换至新基站\n");
+//    printf("切换至新基站\n");
     ueBroadcastInfo->nowGnb = newGnbPoiont;
     return;
 }
@@ -127,6 +131,41 @@ void switchNewGnb(GnbPointInfo newGnbPoiont){
 void addNewGnbInfo(GnbPointInfo new){
     ueBroadcastInfo->saveGnb[ueBroadcastInfo->cursor] = new;
     ueBroadcastInfo->cursor = (ueBroadcastInfo->cursor +1) % MAX_SAVE_GNB;
+    ueBroadcastInfo->saveNums == MAX_SAVE_GNB ?  :  (ueBroadcastInfo->saveNums)++;
+}
+
+/*************************************************
+ * 函数名：                         
+ * 函数功能描述：      查找要切换的基站，如果当前基站为信号最优基站，则不做切换            
+ * 函数参数：
+ * @param  			
+ * 函数返回值               GnbPointInfo*  查找成功，返回要切换的基站的info信息    
+ *                         NULL          当前基站以为最优基站，无需进行切换
+ * @return 
+ * 作者：                           zt
+ * 函数创建日期：                    2020/12/21
+ * 目前版本：                       v1.0.0
+ * 历史版本：                       v1.0.0
+ * 备注:
+ * 		
+**************************************************/
+GnbPointInfo *chose_switch_gnb(){
+    int nowDistance = get_points_distance(ueNowPoint, ueBroadcastInfo->nowGnb.gnbPoint);
+    int minDistance = nowDistance;
+    int result = -1;
+    for (int i = 0; i < ueBroadcastInfo->saveNums; ++i) {
+        int tmpDistance = get_points_distance(ueNowPoint,ueBroadcastInfo->saveGnb[i].gnbPoint);
+        if(minDistance > tmpDistance) {
+            minDistance = tmpDistance;
+            result = i;
+        }
+    }
+    if(result == -1)
+        return NULL;
+    GnbPointInfo *gnbPointInfo1 = calloc(sizeof(GnbPointInfo),1);
+    *gnbPointInfo1 = ueBroadcastInfo->saveGnb[result];
+    return gnbPointInfo1;
+
 }
 
 /*************************************************
@@ -151,6 +190,17 @@ int needSwitch(){
     return 0;
 }
 
+void start_move(int moveSeed){
+    printf("moveSeed:%d\n",moveSeed);
+    sleep(5);
+}
+
+void create_move_thread(int moveSeed){
+    pthread_t tid;
+    pthread_create(&tid,NULL,start_move,moveSeed);
+}
+
+
 
 int main(){
 //    int x = 0, y = 0;
@@ -167,16 +217,29 @@ int main(){
 //        move_point(&point);
 //        printf("gen:x : %d,y : %d\n",point.x,point.y);
 //    }
-    ueBroadcastInfo = initUeBroadcastInfo();
-    GnbPointInfo new;
-    new.gnbPoint.x =1;
-    new.gnbPoint.y = -1;
-    switchNewGnb(new);
+//    ueBroadcastInfo = initUeBroadcastInfo();
+//    GnbPointInfo new;
+//    new.gnbPoint.x =1;
+//    new.gnbPoint.y = -1;
+//    switchNewGnb(new);
 //    ueNowPoint.x = 1;
 //    ueNowPoint.y = 1;
-    int r = needSwitch();
+//    int r = needSwitch();
 //    int t= 1;
 //    printf("rrr\n");
-    printf("rrr\n");
+//    printf("rrr\n");
+//create_move_thread(50);
+    ueNowPoint.x = 0;
+    ueNowPoint.y = 0;
+    ueBroadcastInfo = initUeBroadcastInfo();
+    ueBroadcastInfo->nowGnb.gnbPoint.y = 5;
+    ueBroadcastInfo->nowGnb.gnbPoint.x = 5;
+    GnbPointInfo gnbPointInfo;
+    gnbPointInfo.gnbPoint.y = 1;
+    gnbPointInfo.gnbPoint.x = -1;
+    addNewGnbInfo(gnbPointInfo);
+//    GnbPointInfo *gnbPointInfo1 = calloc(sizeof(GnbPointInfo),1);
+//    *gnbPointInfo1 = ueBroadcastInfo->saveGnb[0];
+    GnbPointInfo *gnbPointInfo1 = chose_switch_gnb();
     return 0;
 }

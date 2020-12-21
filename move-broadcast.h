@@ -14,6 +14,7 @@
 
 #define NEED_SWITCH  50//ue需要进行切换的距离阙值，当大于此值时ue可以进行切换
 
+
 /*
  * 每个实体的位置坐标表示
  */
@@ -35,6 +36,7 @@ typedef struct {
 typedef struct {
     GnbPointInfo nowGnb;
 
+    int saveNums; //；记录当前存储的基站数量
     int cursor; //记录当前存储基站数组游标,指向的位置是下一个可以存储的位置
     GnbPointInfo saveGnb[MAX_SAVE_GNB];
 }UeBroadcastInfo;
