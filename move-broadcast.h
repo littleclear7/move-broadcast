@@ -23,6 +23,9 @@ typedef struct {
     int y;
 }Point;
 
+/*
+ *记录接收到的基站的相关信息，包含基站id、ip、port、point
+ */
 typedef struct {
     char gnbId[20];
     char GnbIp[20];
@@ -31,13 +34,33 @@ typedef struct {
 }GnbPointInfo;
 
 /*
- * 记录UE的一些信息，包括当前基站的位置，当前收到的位置
+ * 记录UE的一些信息，包括当前基站的位置，当前收到的基站位置，UE自己的位置
  */
 typedef struct {
+    pthread_mutex_t infoLock;
+    Point ueNowPoint; //ue当前位置信息
+
     GnbPointInfo nowGnb;
 
     int saveNums; //；记录当前存储的基站数量
     int cursor; //记录当前存储基站数组游标,指向的位置是下一个可以存储的位置
     GnbPointInfo saveGnb[MAX_SAVE_GNB];
 }UeBroadcastInfo;
+
+/*************************************************
+ * 函数名：               initUeBroadcastInfo
+ * 函数功能描述：          初始化ue接收广播结构体
+ * 函数参数：
+ * @param
+ * 函数返回值
+ * @return
+ * 作者：                           zt
+ * 函数创建日期：                    2020/12/21
+ * 目前版本：                       v1.0.0
+ * 历史版本：                       v1.0.0
+ * 备注:
+ *
+**************************************************/
+UeBroadcastInfo* initUeBroadcastInfo();
+
 #endif //MOVE__BROADCAST_MOVE_BROADCAST_H

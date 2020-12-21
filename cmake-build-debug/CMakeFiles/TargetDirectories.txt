@@ -1,3 +1,4 @@
-/root/CLionProjects/move- broadcast/cmake-build-debug/CMakeFiles/rebuild_cache.dir
 /root/CLionProjects/move- broadcast/cmake-build-debug/CMakeFiles/edit_cache.dir
+/root/CLionProjects/move- broadcast/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/root/CLionProjects/move- broadcast/cmake-build-debug/CMakeFiles/test_rand.dir
 /root/CLionProjects/move- broadcast/cmake-build-debug/CMakeFiles/move__broadcast.dir

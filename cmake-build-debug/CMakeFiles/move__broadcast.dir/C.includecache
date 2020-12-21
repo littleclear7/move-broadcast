@@ -13,6 +13,10 @@ stdio.h
 -
 zconf.h
 -
+sys/socket.h
+-
+netinet/in.h
+-
 move-broadcast.h
 /root/CLionProjects/move- broadcast/move-broadcast.h
 time.h
@@ -21,6 +25,8 @@ math.h
 /root/CLionProjects/move- broadcast/math.h
 pthread.h
 /root/CLionProjects/move- broadcast/pthread.h
+string.h
+/root/CLionProjects/move- broadcast/string.h
 
 /root/CLionProjects/move- broadcast/move-broadcast.h
 

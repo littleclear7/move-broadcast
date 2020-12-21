@@ -8,3 +8,4 @@ link_libraries(m)
 link_libraries(pthread)
 
 add_executable(move__broadcast move-broadcast.c)
+add_executable(test_rand test_rand.c)

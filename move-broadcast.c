@@ -4,18 +4,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <zconf.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include "move-broadcast.h"
 #include "time.h"
 #include "math.h"
 #include "pthread.h"
-UeBroadcastInfo *ueBroadcastInfo;
-Point ueNowPoint;
+#include "string.h"
+
+UeBroadcastInfo *ueBroadcastInfo; //ue端接受基站广播切换工作结构体
 int isInitRandom = 0; //初始化随机数种子标识
 
 UeBroadcastInfo* initUeBroadcastInfo(){
     UeBroadcastInfo *ueBroadcastInfo1 = (UeBroadcastInfo *)calloc(sizeof(UeBroadcastInfo),1);
-    int t = sizeof(UeBroadcastInfo);
+    pthread_mutex_init(&ueBroadcastInfo1->infoLock,NULL);
     ueBroadcastInfo1->cursor = 0;
+    ueBroadcastInfo1->saveNums = 0;
     return ueBroadcastInfo1;
 }
 
@@ -46,7 +50,6 @@ void init_move_system(int moveSeed){
 **************************************************/
 
 int _get_move_distance(Point *point){
-    //如果未被主动初始化move种子，那么会使用time(0)进行初始化，注意这样如果在同一时间多开，那么会导致每一个节点的移动轨迹都相同哦
     if ( isInitRandom == 0){
         printf("为初始化move种子，请先执行init_move_system(int moveSeed)!\n");
         return -1;
@@ -121,22 +124,77 @@ int get_points_distance(Point point1, Point point2){
     return sqrt((point1.x - point2.x)*(point1.x - point2.x) + (point1.y - point2.y)*(point1.y - point2.y));
 }
 
-void switchNewGnb(GnbPointInfo newGnbPoiont){
-    //fixme:去掉printf会导致如果在后续继续使用printf会产生malloc(): corrupted top size错误
-//    printf("切换至新基站\n");
-    ueBroadcastInfo->nowGnb = newGnbPoiont;
-    return;
+/*************************************************
+ * 函数名：
+ * 函数功能描述：                  将节点切换至新的基站（只做修改节点的基站信息）
+ * 函数参数：
+ * @param
+ * 函数返回值
+ * @return                         0  切换成功
+ * @return                         -1 切换失败
+ * 作者：                           zt
+ * 函数创建日期：                    2020/12/21
+ * 目前版本：                       v1.0.0
+ * 历史版本：                       v1.0.0
+ * 备注:                           需加锁
+ *
+**************************************************/
+int switchNewGnb(GnbPointInfo newGnbPoiont){
+    if (ueBroadcastInfo != NULL) {
+//        pthread_mutex_lock(&ueBroadcastInfo->infoLock);
+        ueBroadcastInfo->nowGnb = newGnbPoiont;
+//        pthread_mutex_unlock(&ueBroadcastInfo->infoLock);
+        return 0;
+    }
+    return -1;
 }
 
+
+
+/*************************************************
+ * 函数名：
+ * 函数功能描述：                  检测是否已经存储过该gnb
+ * 函数参数：
+ * @param
+ * 函数返回值
+ * @return                          0 已经存储过该gnb
+ * @return                          -1 未存储过该gnb
+ * 作者：                           zt
+ * 函数创建日期：                    2020/12/21
+ * 目前版本：                       v1.0.0
+ * 历史版本：                       v1.0.0
+ * 备注:
+ *
+**************************************************/
+
+int isSaveGnb(GnbPointInfo new){
+    for (int i = 0; i < ueBroadcastInfo->saveNums; ++i) {
+        if (strcmp(ueBroadcastInfo->saveGnb[i].gnbId, new.GnbIp) == 0)
+            return 0;
+    }
+    return -1;
+}
+
+/*
+ * 向广播工作结构体加入新的基站信息
+ * 需加锁
+ */
 void addNewGnbInfo(GnbPointInfo new){
+    if (ueBroadcastInfo == NULL)
+        return;
+//    pthread_mutex_lock(&ueBroadcastInfo->infoLock);
+    if (isSaveGnb(new) == 0)
+        return;
     ueBroadcastInfo->saveGnb[ueBroadcastInfo->cursor] = new;
     ueBroadcastInfo->cursor = (ueBroadcastInfo->cursor +1) % MAX_SAVE_GNB;
     ueBroadcastInfo->saveNums == MAX_SAVE_GNB ?  :  (ueBroadcastInfo->saveNums)++;
+//    pthread_mutex_unlock(&ueBroadcastInfo->infoLock);
+    return;
 }
 
 /*************************************************
  * 函数名：                         
- * 函数功能描述：      查找要切换的基站，如果当前基站为信号最优基站，则不做切换            
+ * 函数功能描述：      查找要切换的基站，如果当前基站为信号最优基站，则不需要做切换。
  * 函数参数：
  * @param  			
  * 函数返回值               GnbPointInfo*  查找成功，返回要切换的基站的info信息    
@@ -146,20 +204,24 @@ void addNewGnbInfo(GnbPointInfo new){
  * 函数创建日期：                    2020/12/21
  * 目前版本：                       v1.0.0
  * 历史版本：                       v1.0.0
- * 备注:
+ * 备注:              需加锁
  * 		
 **************************************************/
 GnbPointInfo *chose_switch_gnb(){
-    int nowDistance = get_points_distance(ueNowPoint, ueBroadcastInfo->nowGnb.gnbPoint);
+    if (ueBroadcastInfo == NULL)
+        return NULL;
+//    pthread_mutex_lock(&ueBroadcastInfo->infoLock);
+    int nowDistance = get_points_distance(ueBroadcastInfo->ueNowPoint, ueBroadcastInfo->nowGnb.gnbPoint);
     int minDistance = nowDistance;
     int result = -1;
     for (int i = 0; i < ueBroadcastInfo->saveNums; ++i) {
-        int tmpDistance = get_points_distance(ueNowPoint,ueBroadcastInfo->saveGnb[i].gnbPoint);
+        int tmpDistance = get_points_distance(ueBroadcastInfo->ueNowPoint,ueBroadcastInfo->saveGnb[i].gnbPoint);
         if(minDistance > tmpDistance) {
             minDistance = tmpDistance;
             result = i;
         }
     }
+//    pthread_mutex_unlock(&ueBroadcastInfo->infoLock);
     if(result == -1)
         return NULL;
     GnbPointInfo *gnbPointInfo1 = calloc(sizeof(GnbPointInfo),1);
@@ -176,59 +238,70 @@ GnbPointInfo *chose_switch_gnb(){
  * 函数返回值
  * @return                       0   需要切换
  * @return                       -1  不需要切换
+ * @return                       -2  需要先初始化ueBroadcastInfo
  * 作者：                           zt
  * 函数创建日期：                    2020/12/18
  * 目前版本：                       v1.0.0
  * 历史版本：                       v1.0.0
- * 备注:
+ * 备注:                            需加锁
  *
 **************************************************/
 int needSwitch(){
-    int distance = get_points_distance(ueNowPoint,ueBroadcastInfo->nowGnb.gnbPoint);
+    if (ueBroadcastInfo == NULL){
+        printf("need init ueBroadcastInfo!\n");
+        return -2;
+    }
+//    pthread_mutex_lock(&ueBroadcastInfo->infoLock);
+    int distance = get_points_distance(ueBroadcastInfo->ueNowPoint,ueBroadcastInfo->nowGnb.gnbPoint);
+//    pthread_mutex_unlock(&ueBroadcastInfo->infoLock);
     if(distance < NEED_SWITCH)
         return -1;
     return 0;
 }
 
+/*
+ * 开始移动，会加锁
+ */
 void start_move(int moveSeed){
     printf("moveSeed:%d\n",moveSeed);
-    sleep(5);
+    init_move_system(5);
+    while (1){
+        sleep(2);
+        pthread_mutex_lock(&ueBroadcastInfo->infoLock);
+        move_point(&ueBroadcastInfo->ueNowPoint);
+        printf("now place: x : %d, y : %d\n",ueBroadcastInfo->ueNowPoint.x,ueBroadcastInfo->ueNowPoint.y);
+        pthread_mutex_unlock(&ueBroadcastInfo->infoLock);
+    }
 }
 
 void create_move_thread(int moveSeed){
     pthread_t tid;
     pthread_create(&tid,NULL,start_move,moveSeed);
+    pthread_detach(tid);
+}
+
+int start_broadcast(int sockFd, void *args) {
+    socklen_t addrLen = sizeof(struct sockaddr);
+    struct sockaddr_in userAddr;
+//    unsigned char recvBuf[D_NSP_TDYTH_NAAAS_5G_UE_BUFF_LEN] = {0};
+//    unsigned char sendBuf[D_NSP_TDYTH_NAAAS_5G_UE_BUFF_LEN] = {0};
+    unsigned char recvBuf[] = {0};
+    unsigned char sendBuf[] = {0};
+    unsigned char type, subType, step;
+    int recvRet, sendLen = 0;
+    while (1) {
+        recvRet = recvfrom(sockFd, recvBuf, sizeof(recvBuf) - 1, 0, (struct sockaddr *) (&userAddr), &addrLen);
+        if (-1 == recvRet) {
+//            log_e("recvfrom fail\n");
+            break;
+        }
+    }
 }
 
 
 
 int main(){
-//    int x = 0, y = 0;
-//    Point point;
-//    point.x = 1;
-//    point.y = 2;
-//    Point point1;
-//    point1.x = 5;
-//    point1.y = 1;
-//    int distance = get_points_distance(point1,point);
-//    printf("%d\n",distance);
-//    init_move_system(12);
-//    for (int i = 0; i < 15; ++i) {
-//        move_point(&point);
-//        printf("gen:x : %d,y : %d\n",point.x,point.y);
-//    }
-//    ueBroadcastInfo = initUeBroadcastInfo();
-//    GnbPointInfo new;
-//    new.gnbPoint.x =1;
-//    new.gnbPoint.y = -1;
-//    switchNewGnb(new);
-//    ueNowPoint.x = 1;
-//    ueNowPoint.y = 1;
-//    int r = needSwitch();
-//    int t= 1;
-//    printf("rrr\n");
-//    printf("rrr\n");
-//create_move_thread(50);
+#if 0 //切换基站选择函数测试
     ueNowPoint.x = 0;
     ueNowPoint.y = 0;
     ueBroadcastInfo = initUeBroadcastInfo();
@@ -241,5 +314,9 @@ int main(){
 //    GnbPointInfo *gnbPointInfo1 = calloc(sizeof(GnbPointInfo),1);
 //    *gnbPointInfo1 = ueBroadcastInfo->saveGnb[0];
     GnbPointInfo *gnbPointInfo1 = chose_switch_gnb();
+#endif
+    ueBroadcastInfo = initUeBroadcastInfo();
+    create_move_thread(5);
+    getchar();
     return 0;
 }
