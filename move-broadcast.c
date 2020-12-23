@@ -11,6 +11,7 @@
 #include "math.h"
 #include "pthread.h"
 #include "string.h"
+#include "NSP_TDYTH_NAAAS_5G_cJson.h"
 
 UeBroadcastInfo *ueBroadcastInfo; //ue端接受基站广播切换工作结构体
 int isInitRandom = 0; //初始化随机数种子标识
@@ -176,7 +177,7 @@ int isSaveGnb(GnbPointInfo new){
 }
 
 /*
- * 向广播工作结构体加入新的基站信息
+ * 向广播工作结构体加入新的基站信息，如果已经存储过该gnb，则不需要
  * 需加锁
  */
 void addNewGnbInfo(GnbPointInfo new){
@@ -280,6 +281,17 @@ void create_move_thread(int moveSeed){
     pthread_detach(tid);
 }
 
+int recv_broadcast(char *recvBuf, int recvLen){
+    cJSON *root = cJSON_Parse(recvBuf);
+    St_Broadcast_packet stBroadcastPacket;
+    GnbPointInfo gnbPointInfo;
+
+    //todo:在这里将收到的广播数据包先转成stBroadcastPacket,在提取出他里面的GnbPointInfo至gnbPointInfo
+
+    addNewGnbInfo(gnbPointInfo);
+    return 0;
+}
+
 int start_broadcast(int sockFd, void *args) {
     socklen_t addrLen = sizeof(struct sockaddr);
     struct sockaddr_in userAddr;
@@ -295,6 +307,7 @@ int start_broadcast(int sockFd, void *args) {
 //            log_e("recvfrom fail\n");
             break;
         }
+        recv_broadcast(recvBuf,recvRet);
     }
 }
 

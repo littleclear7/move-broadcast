@@ -6,6 +6,28 @@
 
 #IncludeRegexTransform: 
 
+/root/CLionProjects/move- broadcast/NSP_TDYTH_NAAAS_5G_cJson.c
+string.h
+-
+stdio.h
+-
+math.h
+-
+stdlib.h
+-
+limits.h
+-
+ctype.h
+-
+locale.h
+-
+NSP_TDYTH_NAAAS_5G_cJson.h
+/root/CLionProjects/move- broadcast/NSP_TDYTH_NAAAS_5G_cJson.h
+
+/root/CLionProjects/move- broadcast/NSP_TDYTH_NAAAS_5G_cJson.h
+stddef.h
+-
+
 /root/CLionProjects/move- broadcast/move-broadcast.c
 stdlib.h
 -

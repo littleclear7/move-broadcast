@@ -136,6 +136,33 @@ move__broadcast/fast:
 	$(MAKE) -f CMakeFiles/move__broadcast.dir/build.make CMakeFiles/move__broadcast.dir/build
 .PHONY : move__broadcast/fast
 
+NSP_TDYTH_NAAAS_5G_cJson.o: NSP_TDYTH_NAAAS_5G_cJson.c.o
+
+.PHONY : NSP_TDYTH_NAAAS_5G_cJson.o
+
+# target to build an object file
+NSP_TDYTH_NAAAS_5G_cJson.c.o:
+	$(MAKE) -f CMakeFiles/move__broadcast.dir/build.make CMakeFiles/move__broadcast.dir/NSP_TDYTH_NAAAS_5G_cJson.c.o
+.PHONY : NSP_TDYTH_NAAAS_5G_cJson.c.o
+
+NSP_TDYTH_NAAAS_5G_cJson.i: NSP_TDYTH_NAAAS_5G_cJson.c.i
+
+.PHONY : NSP_TDYTH_NAAAS_5G_cJson.i
+
+# target to preprocess a source file
+NSP_TDYTH_NAAAS_5G_cJson.c.i:
+	$(MAKE) -f CMakeFiles/move__broadcast.dir/build.make CMakeFiles/move__broadcast.dir/NSP_TDYTH_NAAAS_5G_cJson.c.i
+.PHONY : NSP_TDYTH_NAAAS_5G_cJson.c.i
+
+NSP_TDYTH_NAAAS_5G_cJson.s: NSP_TDYTH_NAAAS_5G_cJson.c.s
+
+.PHONY : NSP_TDYTH_NAAAS_5G_cJson.s
+
+# target to generate assembly for a file
+NSP_TDYTH_NAAAS_5G_cJson.c.s:
+	$(MAKE) -f CMakeFiles/move__broadcast.dir/build.make CMakeFiles/move__broadcast.dir/NSP_TDYTH_NAAAS_5G_cJson.c.s
+.PHONY : NSP_TDYTH_NAAAS_5G_cJson.c.s
+
 move-broadcast.o: move-broadcast.c.o
 
 .PHONY : move-broadcast.o
@@ -200,6 +227,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test_rand"
 	@echo "... move__broadcast"
+	@echo "... NSP_TDYTH_NAAAS_5G_cJson.o"
+	@echo "... NSP_TDYTH_NAAAS_5G_cJson.i"
+	@echo "... NSP_TDYTH_NAAAS_5G_cJson.s"
 	@echo "... move-broadcast.o"
 	@echo "... move-broadcast.i"
 	@echo "... move-broadcast.s"

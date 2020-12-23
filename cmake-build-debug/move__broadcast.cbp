@@ -114,6 +114,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/root/CLionProjects/move- broadcast/NSP_TDYTH_NAAAS_5G_cJson.c">
+			<Option target="move__broadcast"/>
+		</Unit>
+		<Unit filename="/root/CLionProjects/move- broadcast/NSP_TDYTH_NAAAS_5G_cJson.h">
+			<Option target="move__broadcast"/>
+		</Unit>
 		<Unit filename="/root/CLionProjects/move- broadcast/move-broadcast.c">
 			<Option target="move__broadcast"/>
 		</Unit>

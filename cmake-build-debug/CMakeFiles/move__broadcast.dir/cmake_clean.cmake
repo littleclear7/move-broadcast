@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/move__broadcast.dir/NSP_TDYTH_NAAAS_5G_cJson.c.o"
   "CMakeFiles/move__broadcast.dir/move-broadcast.c.o"
   "move__broadcast"
   "move__broadcast.pdb"

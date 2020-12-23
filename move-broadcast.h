@@ -14,7 +14,6 @@
 
 #define NEED_SWITCH  50//ue需要进行切换的距离阙值，当大于此值时ue可以进行切换
 
-
 /*
  * 每个实体的位置坐标表示
  */
@@ -32,6 +31,13 @@ typedef struct {
     int gnbPort;
     Point gnbPoint;
 }GnbPointInfo;
+
+typedef struct {
+    char gnbId[20];
+    char GnbIp[20];
+    int gnbPort;
+    Point gnbPoint;
+}St_Broadcast_packet;
 
 /*
  * 记录UE的一些信息，包括当前基站的位置，当前收到的基站位置，UE自己的位置

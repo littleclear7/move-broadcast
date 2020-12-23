@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/move__broadcast.dir/move-broadcast.c.o  -o move__broadcast  -lm -lpthread 
+/usr/bin/cc -g   CMakeFiles/move__broadcast.dir/move-broadcast.c.o CMakeFiles/move__broadcast.dir/NSP_TDYTH_NAAAS_5G_cJson.c.o  -o move__broadcast  -lm -lpthread 
